@@ -37,12 +37,12 @@ public class TrigramsMockAccumulo
         Connector connector = mock.getConnector("root", new PasswordToken(
                 new byte[0]));
         connector.tableOperations().create("TRIGRAMS");
-        connector.tableOperations()
-                .attachIterator(
-                        "TRIGRAMS",
-                        new IteratorSetting(15, "weightCombiner",
-                                WeightCombiner.class));
-
+        // set up combiner
+        // IteratorSetting combinerSetting = new IteratorSetting(15,
+        // "weightCombiner", WeightCombiner.class);
+        // combinerSetting.addOption("all", "true");
+        // connector.tableOperations().attachIterator("TRIGRAMS",
+        // combinerSetting);
         BatchWriter writer = connector.createBatchWriter("TRIGRAMS",
                 new BatchWriterConfig());
         // ingest data from file
@@ -56,7 +56,7 @@ public class TrigramsMockAccumulo
         scanner.setRange(new Range());
         IteratorSetting iteratorSetting = new IteratorSetting(15,
                 "nextTrigramIterator", TripleNextTrigramIterator.class);
-        iteratorSetting.addOption("start", "THE ADVENTURES");
+        iteratorSetting.addOption("start", "THE ADVENTURES OF");
         iteratorSetting.addOption("maxWords", "1000");
         // scanner.clearScanIterators();
         scanner.addScanIterator(iteratorSetting);

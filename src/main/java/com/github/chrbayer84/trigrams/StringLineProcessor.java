@@ -56,12 +56,12 @@ class StringLineProcessor implements LineProcessor<String>
         {
             // key length: N
             StringBuilder rowIdBuilder = new StringBuilder();
-            for (int keyIndex = 0; keyIndex < N - 1; keyIndex++)
+            for (int keyIndex = 0; keyIndex < N; keyIndex++)
             {
                 rowIdBuilder.append(URLEncoder.encode(words[i + keyIndex],
                         "UTF-8"));
                 // don't add key separator at the last component
-                if (keyIndex != N - 2)
+                if (keyIndex != N - 1)
                 {
                     rowIdBuilder.append(TrigramsMockAccumulo.KEY_SEPARATOR);
                 }
@@ -70,10 +70,8 @@ class StringLineProcessor implements LineProcessor<String>
             Text columnFamily = new Text("weight");
             Text columnQualifier = new Text("qualifier");
             Mutation m = new Mutation(rowId);
-
-            m.put(columnFamily, columnQualifier,
-                    new Value(URLEncoder.encode(words[i + N - 1], "UTF-8")
-                            .getBytes()));
+            // put count == 1 as value
+            m.put(columnFamily, columnQualifier, new Value("1".getBytes()));
             try
             {
                 writer.addMutation(m);

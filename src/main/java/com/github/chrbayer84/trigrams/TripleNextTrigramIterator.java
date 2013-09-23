@@ -12,7 +12,6 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
-import org.apache.accumulo.core.iterators.IteratorUtil;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 
 import com.google.common.base.Throwables;
@@ -38,8 +37,6 @@ public class TripleNextTrigramIterator implements
 
     private int valuesGenerated;
 
-    private boolean random;
-
     @Override
     public void init(SortedKeyValueIterator<Key, Value> source,
             Map<String, String> options, IteratorEnvironment env)
@@ -62,19 +59,18 @@ public class TripleNextTrigramIterator implements
     @Override
     public void next() throws IOException
     {
+        String[] keyComponents = KEY_SEPERATOR_PATTERN.split(nextKey.getRow()
+                .toString());
         // handle first run, print key components that will start the story
         if (firstRun)
         {
-            String[] keyComponents = KEY_SEPERATOR_PATTERN.split(nextKey
-                    .getRow().toString());
-            System.out.print(keyComponents[0] + " " + keyComponents[1] + " ");
+            System.out.print(keyComponents[0] + " " + keyComponents[1] + " "
+                    + keyComponents[2] + " ");
             firstRun = false;
         }
-        Range range = random ? IteratorUtil
-                .maximizeStartKeyTimeStamp(new Range(nextKey, null))
-                : IteratorUtil
-                        .minimizeEndKeyTimeStamp(new Range(nextKey, null));
-        random = !random;
+        // find records by prefix
+        Range range = Range.prefix(keyComponents[0] + " " + keyComponents[1]
+                + " ");
         source.seek(range, new ArrayList<ByteSequence>(), false);
 
         if (source.hasTop() && valuesGenerated < MAXWORDS)
@@ -84,15 +80,15 @@ public class TripleNextTrigramIterator implements
             // Preconditions.checkState(nextKey.equals(currentKey.getRow()
             // .toString()));
             // get value
-            currentValue = source.getTopValue();
-            String value = new String(currentValue.get());
+            // currentValue = source.getTopValue();
+            // String value = new String(currentValue.get());
             // construct next key
-            String[] keyComponents = KEY_SEPERATOR_PATTERN.split(currentKey
-                    .toString());
+            keyComponents = KEY_SEPERATOR_PATTERN.split(currentKey.toString());
             nextKey = new Key(keyComponents[1]
-                    + TrigramsMockAccumulo.KEY_SEPARATOR + value);
+                    + TrigramsMockAccumulo.KEY_SEPARATOR + keyComponents[2]);
             // print value to console
-            System.out.print(URLDecoder.decode(value, "UTF-8") + " ");
+            System.out
+                    .print(URLDecoder.decode(keyComponents[2], "UTF-8") + " ");
             valuesGenerated++;
         }
         else
