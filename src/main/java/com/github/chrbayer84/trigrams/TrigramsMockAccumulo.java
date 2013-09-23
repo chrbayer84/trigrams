@@ -37,11 +37,11 @@ public class TrigramsMockAccumulo
         Connector connector = mock.getConnector("root", new PasswordToken(
                 new byte[0]));
         connector.tableOperations().create("TRIGRAMS");
-        connector.tableOperations()
-                .attachIterator(
-                        "TRIGRAMS",
-                        new IteratorSetting(15, "weightCombiner",
-                                WeightCombiner.class));
+        // connector.tableOperations()
+        // .attachIterator(
+        // "TRIGRAMS",
+        // new IteratorSetting(15, "weightCombiner",
+        // WeightCombiner.class));
 
         BatchWriter writer = connector.createBatchWriter("TRIGRAMS",
                 new BatchWriterConfig());
