@@ -46,8 +46,6 @@ public class TripleNextTrigramIterator implements
         int maxRandomCount = TrigramsMockAccumulo.RANDOM.nextInt(10);
         while (source.hasTop())
         {
-            source.next();
-
             currentKey = source.getTopKey();
             currentValue = source.getTopValue();
             long weight = Long.parseLong(currentValue.toString());
@@ -59,6 +57,7 @@ public class TripleNextTrigramIterator implements
                 break;
             }
             highestWeight = weight;
+            source.next();
         }
     }
 
