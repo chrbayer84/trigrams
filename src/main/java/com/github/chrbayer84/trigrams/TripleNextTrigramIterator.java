@@ -1,11 +1,8 @@
 package com.github.chrbayer84.trigrams;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
@@ -19,23 +16,11 @@ import com.google.common.base.Throwables;
 public class TripleNextTrigramIterator implements
         SortedKeyValueIterator<Key, Value>
 {
-    private static final Pattern KEY_SEPERATOR_PATTERN = Pattern.compile(
-    // "\\"+
-            TrigramsMockAccumulo.KEY_SEPARATOR);
-
     private SortedKeyValueIterator<Key, Value> source;
 
     private Key currentKey;
 
     private Value currentValue;
-
-    private Key nextKey;
-
-    private boolean firstRun = true;
-
-    private int MAXWORDS;
-
-    private int valuesGenerated;
 
     @Override
     public void init(SortedKeyValueIterator<Key, Value> source,
@@ -43,59 +28,37 @@ public class TripleNextTrigramIterator implements
             throws IOException
     {
         this.source = source;
-        // get starting value from options and set currentKey to it, next() will
-        // start off this key
-        nextKey = new Key(options.get("start"));
-        // get max word count
-        MAXWORDS = Integer.parseInt(options.get("maxWords"));
     }
 
     @Override
     public boolean hasTop()
     {
-        return currentKey != null || nextKey != null;
+        return source.hasTop();
     }
 
     @Override
     public void next() throws IOException
     {
-        String[] keyComponents = KEY_SEPERATOR_PATTERN.split(nextKey.getRow()
-                .toString());
-        // handle first run, print key components that will start the story
-        if (firstRun)
+        long highestWeight = Long.MAX_VALUE;
+        int count = 0;
+        // maximum of 10 tries for to find the next value, this will ensure
+        // that 10 keys with the same weight will be considered
+        int maxRandomCount = TrigramsMockAccumulo.RANDOM.nextInt(10);
+        while (source.hasTop())
         {
-            System.out.print(keyComponents[0] + " " + keyComponents[1] + " "
-                    + keyComponents[2] + " ");
-            firstRun = false;
-        }
-        // find records by prefix
-        Range range = Range.prefix(keyComponents[0] + " " + keyComponents[1]
-                + " ");
-        source.seek(range, new ArrayList<ByteSequence>(), false);
+            source.next();
 
-        if (source.hasTop() && valuesGenerated < MAXWORDS)
-        {
             currentKey = source.getTopKey();
-            // assert we got the same key
-            // Preconditions.checkState(nextKey.equals(currentKey.getRow()
-            // .toString()));
-            // get value
-            // currentValue = source.getTopValue();
-            // String value = new String(currentValue.get());
-            // construct next key
-            keyComponents = KEY_SEPERATOR_PATTERN.split(currentKey.toString());
-            nextKey = new Key(keyComponents[1]
-                    + TrigramsMockAccumulo.KEY_SEPARATOR + keyComponents[2]);
-            // print value to console
-            System.out
-                    .print(URLDecoder.decode(keyComponents[2], "UTF-8") + " ");
-            valuesGenerated++;
-        }
-        else
-        {
-            currentKey = null;
-            currentValue = null;
-            nextKey = null;
+            currentValue = source.getTopValue();
+            long weight = Long.parseLong(currentValue.toString());
+            // weightCombiner will have sorted keys by weight, so highest
+            // weight will be up front. Only iterate over the next keys if
+            // weight is equal for the next key.
+            if (highestWeight < weight || maxRandomCount == count++)
+            {
+                break;
+            }
+            highestWeight = weight;
         }
     }
 

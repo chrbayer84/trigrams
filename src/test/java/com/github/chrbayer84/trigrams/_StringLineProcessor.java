@@ -76,10 +76,10 @@ public class _StringLineProcessor
                 batchWriter);
         stringLineProcessor.processLine(probe);
         Assert.assertEquals(4, result.size());
-        Assert.assertEquals("1", result.get("Tom blanched and"));
-        Assert.assertEquals("1", result.get("blanched and dropped"));
-        Assert.assertEquals("1", result.get("and dropped his"));
-        Assert.assertEquals("1", result.get("dropped his eyes.%0A"));
+        Assert.assertEquals("1", result.get("Tom blanched"));
+        Assert.assertEquals("1", result.get("blanched and"));
+        Assert.assertEquals("1", result.get("and dropped"));
+        Assert.assertEquals("1", result.get("dropped his"));
     }
 
     @Test
@@ -94,14 +94,14 @@ public class _StringLineProcessor
         stringLineProcessor.processLine(probe1);
         stringLineProcessor.processLine(probe2);
         Assert.assertEquals(8, result.size());
-        Assert.assertEquals("and", result.get("Tom blanched"));
-        Assert.assertEquals("dropped", result.get("blanched and"));
-        Assert.assertEquals("his", result.get("and dropped"));
-        Assert.assertEquals("eyes.%0A", result.get("dropped his"));
-        Assert.assertEquals("It%27s", result.get("his eyes.%0A"));
-        Assert.assertEquals("a", result.get("eyes.%0A It%27s"));
-        Assert.assertEquals("bad", result.get("It%27s a"));
-        Assert.assertEquals("sign.%0A", result.get("a bad"));
+        Assert.assertEquals("1", result.get("Tom blanched"));
+        Assert.assertEquals("1", result.get("blanched and"));
+        Assert.assertEquals("1", result.get("and dropped"));
+        Assert.assertEquals("1", result.get("dropped his"));
+        Assert.assertEquals("1", result.get("his eyes."));
+        Assert.assertEquals("1", result.get("eyes. It%27s"));
+        Assert.assertEquals("1", result.get("It%27s a"));
+        Assert.assertEquals("1", result.get("a bad"));
     }
 
     @Test
@@ -124,7 +124,7 @@ public class _StringLineProcessor
                 batchWriter);
         stringLineProcessor.processLine(probe);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals("1", result.get("Tom blanched and%0A"));
+        Assert.assertEquals("1", result.get("Tom blanched"));
     }
 
     @Test

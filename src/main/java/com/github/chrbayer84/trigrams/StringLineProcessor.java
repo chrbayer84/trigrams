@@ -44,7 +44,7 @@ class StringLineProcessor implements LineProcessor<String>
             return true;
         }
         // re-add newline to handle paragraphs
-        currentLine[currentLine.length - 1] += "\n";
+        // currentLine[currentLine.length - 1] += "\n";
         // get words wrapped from the last line
         // push words from the end of the last line to temp storage
         List<String> tmpList = Lists.newArrayList(before);
@@ -56,18 +56,19 @@ class StringLineProcessor implements LineProcessor<String>
         {
             // key length: N
             StringBuilder rowIdBuilder = new StringBuilder();
-            for (int keyIndex = 0; keyIndex < N; keyIndex++)
+            for (int keyIndex = 0; keyIndex < N - 1; keyIndex++)
             {
-                rowIdBuilder.append(URLEncoder.encode(words[i + keyIndex],
-                        "UTF-8"));
+                rowIdBuilder.append(URLEncoder.encode(
+                        words[i + keyIndex].replaceAll("\"", ""), "UTF-8"));
                 // don't add key separator at the last component
-                if (keyIndex != N - 1)
+                if (keyIndex != N - 2)
                 {
                     rowIdBuilder.append(TrigramsMockAccumulo.KEY_SEPARATOR);
                 }
             }
             Text rowId = new Text(rowIdBuilder.toString());
-            Text columnFamily = new Text("weight");
+            Text columnFamily = new Text(URLEncoder.encode(
+                    words[i + N - 1].replaceAll("\"", ""), "UTF-8"));
             Text columnQualifier = new Text("qualifier");
             Mutation m = new Mutation(rowId);
             // put count == 1 as value
